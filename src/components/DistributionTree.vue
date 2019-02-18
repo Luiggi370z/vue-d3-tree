@@ -1,5 +1,5 @@
 <template>
-  <div ref='container'>
+  <div>
     <svg
       :height='settings.height'
       :width='settings.width'
@@ -11,9 +11,9 @@
           name="line"
         >
           <path
-            v-for="(link, index) in links"
+            v-for="link in links"
             class="link"
-            :key="index"
+            :key="link.id"
             :d="link.d"
             :style="link.style"
           ></path>
@@ -27,7 +27,7 @@
             class="node"
             @click="select(index, node)"
             v-for="(node, index) in nodes"
-            :key="index"
+            :key="node.id"
             :style="node.style"
             :class="[node.className, {'highlight': node.highlight}]"
           >
@@ -60,37 +60,44 @@ export default {
       selected: null,
       settings: {
         strokeColor: '#ccc',
-        width: 915,
-        height: 800
+        width: 300,
+        height: 300,
+        padding: 16
       }
     }
   },
+  created() {
+    window.addEventListener('resize', this.setSize)
+  },
+  destroyed() {
+    window.removeEventListener('resize', this.setSize)
+  },
+  mounted() {
+    setTimeout(this.setSize, 0)
+  },
   methods: {
+    setSize() {
+      const elm = this.$parent.$slots.default[0].elm
+      if (elm === undefined) return
+
+      const margin = this.settings.padding * 2
+      this.settings.width = elm.clientWidth - margin
+      this.settings.height = elm.clientHeight - margin
+    },
     select(index, node) {
       this.selected = index
-      // if (node.viewChilds) {
-      //   node._children = [node.children]
-      //   node.children = null
-      // } else {
-      //   node.children = [node._children]
-      //   node._children = null
-      // }
-      // node.viewChilds = !node.viewChilds
-      console.log(node)
+      console.log('Selected node', node)
     }
   },
   computed: {
     root() {
-      console.log('d3-hierarchy', d3.hierarchy(this.personData))
-      return this.personData ? this.tree(d3.hierarchy(this.personData)) : {}
+      return this.personData ? this.tree(d3.hierarchy(this.personData)) : null
     },
     tree() {
-      console.log(this.$refs)
-      return d3.tree().size([this.settings.height, this.settings.width - 220])
+      return d3.tree().size([this.settings.height, this.settings.width - 200])
     },
     nodes() {
       if (this.root) {
-        // console.log(this.root)
         return this.root.descendants().map(descendant => ({
           id: descendant.data.id,
           date: descendant.data.date.toString(),
@@ -115,10 +122,10 @@ export default {
           }
         }))
       }
+      return null
     },
     links() {
       if (this.root) {
-        console.log('root from LINKS', this.root.descendants()[0])
         return this.root
           .descendants()
           .slice(1)
@@ -148,6 +155,7 @@ export default {
             }
           })
       }
+      return null
     }
   }
 }
@@ -184,7 +192,6 @@ export default {
 
 .link {
   fill: none;
-  /* stroke-opacity: 0.4; */
   stroke-width: 1.5px;
   stroke-dasharray: 1000;
   stroke: #ccc;

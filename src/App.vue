@@ -16,56 +16,89 @@
     </v-toolbar>
 
     <v-content>
-      <HelloWorld />
+      <v-layout
+        row
+        justify-center
+      >
+        <v-btn
+          color="primary"
+          dark
+          @click="dialog = true"
+        >View Details</v-btn>
+      </v-layout>
       <v-dialog
         v-model="dialog"
         persistent
         width="90%"
+        lazy
       >
-        <v-btn
-          slot="activator"
-          color="primary"
-          dark
-        >Open Dialog</v-btn>
+
         <v-card>
+          <div class="actions">
+            <v-icon
+              medium
+              @click='dialog = false'
+            >close</v-icon>
+          </div>
           <v-card-title>
             <span class="headline">John Doe</span>
+
           </v-card-title>
           <v-card-text style="height: 500px;">
-            <DistributionTree :personData=personDistribution></DistributionTree>
+            <v-tabs
+              v-model="active"
+              grow
+            >
+              <v-tab
+                :key="0"
+                ripple
+              >
+                Overview
+              </v-tab>
+              <v-tab
+                :key="1"
+                ripple
+              >
+                Tree
+              </v-tab>
+              <v-tab-item :key="0">
+                <v-card flat>
+                  <v-card-text>Test</v-card-text>
+                </v-card>
+              </v-tab-item>
+              <v-tab-item :key="1">
+                <v-card flat>
+                  <v-card-text style="height: 420px;">
+                    <DistributionTree
+                      :personData=personDistribution
+                      v-if='dialog && active == 1'
+                    ></DistributionTree>
+                  </v-card-text>
+                </v-card>
+              </v-tab-item>
+            </v-tabs>
           </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="green darken-1"
-              flat
-              @click="dialog = false"
-            >Close</v-btn>
-          </v-card-actions>
         </v-card>
       </v-dialog>
-      <DistributionTree :personData=personDistribution></DistributionTree>
     </v-content>
 
   </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld'
 import DistributionTree from './components/DistributionTree'
 import { simulatedData } from './data'
-import * as d3 from 'd3'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld,
     DistributionTree
   },
   data() {
     return {
       personDistribution: null,
-      dialog: false
+      dialog: false,
+      active: null
     }
   },
   mounted() {
@@ -79,3 +112,11 @@ export default {
   }
 }
 </script>
+<style scoped>
+.actions {
+  position: absolute;
+  right: 10px;
+  top: 15px;
+  z-index: 300;
+}
+</style>
